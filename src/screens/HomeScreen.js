@@ -1,67 +1,107 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState, useEffect, useMemo } from 'react';
+import { 
+  View, 
+  FlatList, 
+  TouchableOpacity, 
+  ActivityIndicator, 
+  Text, 
+  RefreshControl 
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+
+import { fetchAnimals } from '../services/api';
+import AnimalCard from '../components/AnimalCard';
+import FilterButtons from '../components/FilterButtons';
+import styles from '../styles/HomeScreen';
 
 const HomeScreen = ({ navigation }) => {
+  const [filterType, setFilterType] = useState('all');
+  const [animals, setAnimals] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [error, setError] = useState(null);
+
+  const getAnimalsData = async (silent = false) => {
+    if (!silent) setIsLoading(true);
+    try {
+      const data = await fetchAnimals();
+      setAnimals(data);
+      setError(null);
+    } catch (err) {
+      setError('Oups, impossible de récupérer les animaux.');
+      console.warn('API Error:', err);
+    } finally {
+      setIsLoading(false);
+      setIsRefreshing(false);
+    }
+  };
+
+  useEffect(() => {
+    getAnimalsData();
+  }, []);
+
+  const filteredAnimals = useMemo(() => {
+    return filterType === 'all' 
+      ? animals 
+      : animals.filter(a => a.type === filterType);
+  }, [animals, filterType]);
+
+  const onRefresh = () => {
+    setIsRefreshing(true);
+    getAnimalsData(true);
+  };
+
+  if (isLoading && !isRefreshing) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="small" color="#007AFF" />
+        <Text style={{ marginTop: 12, color: '#999' }}>On arrive...</Text>
+      </View>
+    );
+  }
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.welcome}>🐺 Bienvenue sur Pet-Lycans 🐦‍🔥</Text>
-      
-      <View style={styles.menu}>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Details')}>
-          <Text style={styles.menuText}>Détails 📝</Text>
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <FilterButtons
+        filterType={filterType}
+        onFilterChange={setFilterType}
+      />
+
+      <FlatList
+        data={filteredAnimals}
+        renderItem={({ item }) => (
+          <AnimalCard
+            animal={item}
+            onPress={() => navigation.navigate('Details', { animal: item })}
+          />
+        )}
+        keyExtractor={item => item.id.toString()}
+        contentContainerStyle={styles.listContainer}
+        refreshControl={
+          <RefreshControl refreshing={isRefreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          !isLoading && <Text style={{ textAlign: 'center', marginTop: 20 }}>Aucun animal trouvé 🐾</Text>
+        }
+      />
+
+      <View style={styles.buttonsContainer}>
+        <TouchableOpacity
+          style={styles.buttonWrapper} 
+          onPress={() => navigation.navigate('Favorites')}
+        >
+          <Text style={{ color: '#007AFF', fontWeight: '600' }}>⭐ Favoris</Text>
         </TouchableOpacity>
+
         <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Favorites')}>
-          <Text style={styles.menuText}>Mes Favoris ❤️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={styles.menuItem}
-          onPress={() => navigation.navigate('Profile')}>
-          <Text style={styles.menuText}>Mon Profil 👤</Text>
+          style={styles.buttonWrapper} 
+          onPress={() => navigation.navigate('Profile')}
+        >
+          <Text style={{ color: '#007AFF', fontWeight: '600' }}>👤 Mon Profil</Text>
         </TouchableOpacity>
       </View>
-    </View>
+    </SafeAreaView>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    backgroundColor: '#f5f5f5',
-  },
-  welcome: {
-    fontSize: 28,
-    fontWeight: 'bold',
-    marginTop: 40,
-    marginBottom: 10,
-    color: '#333',
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 40,
-  },
-  menu: {
-    gap: 15,
-  },
-  menuItem: {
-    backgroundColor: '#fff',
-    padding: 20,
-    borderRadius: 10,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-  },
-  menuText: {
-    fontSize: 18,
-    color: '#007AFF',
-  },
-});
 
 export default HomeScreen;
