@@ -19,8 +19,6 @@ const App = () => {
     () => [
       'Astuce: Ajoutez vos lycans favoris pour les retrouver rapidement.',
       'Conseil: Balayez pour voir plus de détails sur chaque profil.',
-      'Info: Activez le mode sombre pour reposer vos yeux la nuit.',
-      'Hint: Appuyez longtemps pour ouvrir les options avancées.',
     ],
     []
   );
