@@ -8,7 +8,7 @@ import styles from '../styles/components/AnimalDetails';
 const AnimalDetails = ({ animal, isFavorite, onToggleFavorite }) => {
   const labels = {
     pelican: 'Pélican',
-    loup: 'Loup'
+    wolf: 'Loup'
   };
 
   if (!animal) return null;
