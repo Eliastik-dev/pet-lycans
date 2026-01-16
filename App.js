@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, ActivityIndicator, Text, useColorScheme } from 'react-native';
 import { NavigationContainer, DefaultTheme, DarkTheme } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, SafeAreaProvider } from 'react-native-safe-area-context';
 import HomeScreen from './src/screens/HomeScreen';
 import DetailsScreen from './src/screens/DetailsScreen';
 import ProfileScreen from './src/screens/ProfileScreen';
@@ -34,48 +34,48 @@ const App = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
-    return (
-      <SafeAreaView style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
-        <ActivityIndicator size="large" color="#6C63FF" />
-        <Text style={{ marginTop: 12, fontSize: 16, color: '#666' }}>Chargement… Préparez vos lycans 🐺</Text>
-        <Text style={{ marginTop: 6, fontSize: 13, color: '#888' }}>{tip}</Text>
-      </SafeAreaView>
-    );
-  }
-
   return (
-    <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack.Navigator
-        screenOptions={{
-          headerTitleAlign: 'center',
-          headerTintColor: colorScheme === 'dark' ? '#fff' : '#222',
-          headerShadowVisible: false,
-          animation: 'fade',
-        }}
-      >
-        <Stack.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{ title: 'Accueil' }}
-        />
-        <Stack.Screen
-          name="Details"
-          component={DetailsScreen}
-          options={{ title: 'Détails du lycan' }}
-        />
-        <Stack.Screen
-          name="Profile"
-          component={ProfileScreen}
-          options={{ title: 'Mon profil' }}
-        />
-        <Stack.Screen
-          name="Favorites"
-          component={FavoritesScreen}
-          options={{ title: 'Favoris' }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+    <SafeAreaProvider>
+      {isLoading ? (
+        <SafeAreaView style={[styles.container, { alignItems: 'center', justifyContent: 'center' }]}>
+          <ActivityIndicator size="large" color="#6C63FF" />
+          <Text style={{ marginTop: 12, fontSize: 16, color: '#666' }}>Chargement… Préparez vos lycans 🐺</Text>
+          <Text style={{ marginTop: 6, fontSize: 13, color: '#888' }}>{tip}</Text>
+        </SafeAreaView>
+      ) : (
+        <NavigationContainer theme={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+          <Stack.Navigator
+            screenOptions={{
+              headerTitleAlign: 'center',
+              headerTintColor: colorScheme === 'dark' ? '#fff' : '#222',
+              headerShadowVisible: false,
+              animation: 'fade',
+            }}
+          >
+            <Stack.Screen
+              name="Home"
+              component={HomeScreen}
+              options={{ title: 'Accueil' }}
+            />
+            <Stack.Screen
+              name="Details"
+              component={DetailsScreen}
+              options={{ title: 'Détails du lycan' }}
+            />
+            <Stack.Screen
+              name="Profile"
+              component={ProfileScreen}
+              options={{ title: 'Mon profil' }}
+            />
+            <Stack.Screen
+              name="Favorites"
+              component={FavoritesScreen}
+              options={{ title: 'Favoris' }}
+            />
+          </Stack.Navigator>
+        </NavigationContainer>
+      )}
+    </SafeAreaProvider>
   );
 };
 
